@@ -5,17 +5,19 @@ using Distributions
 using HypothesisTests
 using StatsBase
 using StatsPlots
-using Interact
-using Blink
 using Dates
 
 chess = CSV.read("plotting-and-data-exploration\\chess.csv", DataFrame)
-to_date(str) = try Date(str) catch; missing end
-chess[!, :B_day] = map(to_date, chess[!, :B_day])
 
+#date repair
+to_date(str) = try Date(str) catch; missing end
+chess[!, :B_day] = map(to_date, chess[!, :B_day]) 
+
+#summary table
 gbschess = groupby(chess, :Sex)
 summary_stats = combine(gbschess, :Rating => maximum, :Rating => mean)
 
+#visualization
 bar(summary_stats.Sex, summary_stats.Rating_maximum)
 @df chess histogram(
     :Rating, 
@@ -26,7 +28,7 @@ bar(summary_stats.Sex, summary_stats.Rating_maximum)
     group = (:Sex),
     fillalpha = 0.01)
 
-
+#permutation test function
 function permutationtest(sampleone, sampletwo; n, func :: Function)
     pooled = cat(sampleone, sampletwo, dims = 1)
     lengthone, lengthpooled = length(sampleone), length(pooled) 
@@ -45,29 +47,32 @@ function permutationtest(sampleone, sampletwo; n, func :: Function)
     return (mean(permutedstats .>= basestat),permutedstats) 
 end 
 
+#func of choice
 diffmax(s1, s2) = maximum(s2) - maximum(s1)
 
-#chessind = subset(chess,[:Country, :B_day] => (x,y) -> ByRow(x == "India" && y < Date(2000)), skipmissing=true )
-
+#subsetting
 chessind = subset(chess, :Country => ByRow(==("India")), :B_day => ByRow(<(Date(2000))), skipmissing=true)
-#chess[(chess.Country .== "India") .& (Date(chess.B_day) .< Date(2000)),:]
+
+#summary table
 chessindsum = combine(
     groupby(chessind, :Sex),
     :Rating => maximum,
     :Rating => mean,
     nrow
 )
+chessindsum
 
-
-
+#extraction 
 fratings = chessind[(chessind.Sex .== "F"),:].Rating
 mratings = chessind[(chessind.Sex .== "M"),:].Rating
 diff = diffmax(fratings, mratings)
 
+#run permutation test with 100,000 iterations. 
 results = permutationtest(fratings, mratings, n=100_000, func = diffmax) 
 
 pval, means = results[1],results[2] 
 
+#plot results.
 plot = density(
     means,
     plot_title = "Average Difference of Maxes in Permuted Samples",
