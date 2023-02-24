@@ -1,0 +1,96 @@
+using StatsBase
+using Distributions
+using HypothesisTests
+using Plots
+using LinearAlgebra
+
+qa = Dict() 
+
+#= 
+Question 3.8 
+X random variable from 3.1. 
+(a) Compute mean of X.
+(b) Compute E[|X-2|] 
+=#
+qa["Question 3.8"] = Dict() 
+
+x = [1,2,3,4,5]; p = [1/7,1/14,3/14,2/7,2/7] 
+
+#(a) 
+qa["Question 3.8"]["(a)"] = sum(x .* p)
+
+#(b) 
+qa["Question 3.8"]["(b)"] = sum(map(x->abs(x-2), x).*p)
+
+#=
+Question 3.24
+Suppose X has discrete dist (follows). 
+
+(a) What is P(X >= 2) 
+(b) What is E(1/(1+X)) 
+=#
+qa["Question 3.24"] = Dict() 
+x = [1,2,3]; p=[1/7,2/7,4/7] 
+
+#(a)
+qa["Question 3.24"]["(a)"] = sum(p[x.>= 2])
+
+#(b) 
+qa["Question 3.24"]["(b)"] = sum(map(x-> 1/(1+x), x).*p)
+
+#= 
+Question 3.32
+A fair coin is flipped three times. 
+Let X be the number of heads observed. 
+(a) Give both the possible values and pmf of X. 
+(b) Find P(X >= 1) and P(X > 1).
+(c) Compute E[X] and Var(X). 
+=# 
+qa["Question 3.32"] = Dict()
+x=[0,1,2,3] 
+
+#(a) 
+p = map(x -> pdf(Binomial(3,0.5),x), x)
+qa["Question 3.32"]["(a)"] = hcat(x,p) 
+
+#(b) 
+qa["Question 3.32"]["(b)"] = (sum(p[x.>=1]), sum(p[x.>1])) 
+
+#(c) 
+e_x = sum(p.*x); var_x = sum(p.*map(x->x^2, x))-e_x^2
+qa["Question 3.32"]["(c)"] = (e_x, var_x) 
+
+#=
+Question 3.38
+Let random variable Z pdf 
+f_Z(z) = 5/z*z^4 when -1 <= z <= 1, 0 else 
+(a) Calculate E[Z]
+(b) Calculate P(0<Z<1/2)
+(c) Calculate P(Z<1/2 | Z>0)
+(d) Calculate all moments E[Z^n] 
+=#
+
+q3_38 = Dict() 
+
+genuniform(n, lb, ub) = rand(Uniform(lb, ub), n)
+pdf_3_38(n, lb, ub) = map(z-> (5/2) * z *(z^4), genuniform(n,lb,ub))
+
+sample_3_38 = pdf_3_38(1_000, -1, 1)
+#(a) Calculate E[Z]  
+q3_38["(a)"] = mean(sample_3_38)
+
+#(b) 
+mean((sample_3_38 .<= 1/2) .& (sample_3_38 .>= 0))
+
+#=
+Question 3.48
+A random point is picked uniformly inside the triangle
+on the plane with vertices (0,0), (2,0), and (0,1).
+Compute the expectation of the distance of this point
+to y-axis. 
+=# 
+
+uniquepoint(n) = hcat(rand(Uniform(0,2), n),  rand(Uniform(0,1),n ))
+sim(n) = mean(map(x->abs(x), uniquepoint(n)[:,1]))
+
+qa["Question 3.48"] = sim(1_000_000)
