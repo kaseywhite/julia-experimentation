@@ -60,6 +60,18 @@ qa["Question 3.32"]["(b)"] = (sum(p[x.>=1]), sum(p[x.>1]))
 e_x = sum(p.*x); var_x = sum(p.*map(x->x^2, x))-e_x^2
 qa["Question 3.32"]["(c)"] = (e_x, var_x) 
 
+#= 
+Question 3.36
+Suppose a random variable X has density function:
+f(x) = 2/(x^2) when 1<= x<= 2, 0 else
+Compute E(X^4) 
+=#
+function generate_X_samples(n; k=4)
+    u = (n:(2^k*n)) ./ n;v = map(v->(2/(v^2)), u)
+    return sample(u, Weights(v), n) 
+end 
+
+qa["Question 3.36"] = mean(generate_X_samples(100_000))
 #=
 Question 3.38
 Let random variable Z pdf 
@@ -70,17 +82,25 @@ f_Z(z) = 5/z*z^4 when -1 <= z <= 1, 0 else
 (d) Calculate all moments E[Z^n] 
 =#
 
-q3_38 = Dict() 
+qa["Question 3.38"] = Dict() 
 
-genuniform(n, lb, ub) = rand(Uniform(lb, ub), n)
-pdf_3_38(n, lb, ub) = map(z-> (5/2) * z *(z^4), genuniform(n,lb,ub))
+function generate_Z_samples(n ; k=1)
+u = (-k*n:k*n) ./ n ; x = map(z-> (5/2) * (z^4), u)
+return sample(u, Weights(x), n) 
+end 
 
-sample_3_38 = pdf_3_38(1_000, -1, 1)
+sample_3_38 = generate_Z_samples(1_000_000)
 #(a) Calculate E[Z]  
-q3_38["(a)"] = mean(sample_3_38)
+qa["Question 3.38"]["(a)"] = mean(sample_3_38)
 
 #(b) 
-mean((sample_3_38 .<= 1/2) .& (sample_3_38 .>= 0))
+qa["Question 3.38"]["(b)"] = mean((sample_3_38 .<= 1/2) .& (sample_3_38 .>= 0))
+
+#(c) 
+qa["Question 3.38"]["(c)"]  =  qa["Question 3.38"]["(b)"] / mean(sample_3_38 .>=0)
+
+#(d) 
+qa["Question 3.38"]["(d)"] = mean(map(x -> mean(generate_Z_samples(100_000, k = x)), 2:100))
 
 #=
 Question 3.48
