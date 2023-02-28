@@ -14,7 +14,7 @@ function permutationtest(sampleone, sampletwo; n, func :: Function, lowertail = 
     permutedstats = [] 
     for i = 1:n
         permuted = sample(pooled, lengthpooled, replace=false)
-        permutedone, permutedtwo = permuted[1:lengthone], permuted[lengthone:lengthpooled] 
+        permutedone, permutedtwo = permuted[1:lengthone], permuted[lengthone+1:lengthpooled] 
         push!(permutedstats, func(permutedone, permutedtwo))
     end
     return ifelse(lowertail, mean(permutedstats .<= basestat), mean(permutedstats .>= basestat))*(twosided+1)
